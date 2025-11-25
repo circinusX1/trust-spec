@@ -1,7 +1,7 @@
 ### Extend HAB frmom u-boot and kernel to OS using a simple kernel driver
 #### Prerequisites
-     * u-boot is signed with HAB
-     * kernel too
+ * u-boot is signed with HAB
+ * kernel too
 
 -- --
 ####  How it works
