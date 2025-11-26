@@ -5,7 +5,7 @@
 
 -- --
 ####  How it works
- * a build in kernel driver. Not as module. (or signed module)
+ * a build in kernel driver. Not as module. (or signed module) with hardcoded pub key of a key pair
  * First bootup, finds a private key, check it against kernel compiled-in public key /dev/mco-sane and signs the user space utility and i;s config 'sanesystem' and 'sanesystem.conf'
  * Kernel driver runs "sanesystem CREATE HASH privkey" to create a permanent system hash file based on files sizes, timetamp and CRC or commands output, see conf file.
     * sanesystem then signs using private key the permanent system hash
