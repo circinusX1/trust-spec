@@ -1,4 +1,17 @@
 bin/*
 build*
 .qtcre*
+sane-dev/.Module.symvers.cmd
+sane-dev/.modules.order.cmd
+sane-dev/.sane-dev.ko.cmd
+sane-dev/.sane-dev.mod.cmd
+sane-dev/.sane-dev.mod.o.cmd
+sane-dev/.sane-dev.o.cmd
+sane-dev/Module.symvers
+sane-dev/modules.order
+sane-dev/sane-dev.ko
+sane-dev/sane-dev.mod
+sane-dev/sane-dev.mod.c
+sane-dev/sane-dev.mod.o
+sane-dev/sane-dev.o
 

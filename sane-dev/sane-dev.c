@@ -1,6 +1,6 @@
 
-#ifdef CPLUSPLUS
-
+#ifndef CPLUSPLUS
+#include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/kmod.h>
 #include <linux/kthread.h>
@@ -8,7 +8,8 @@
 #include <linux/mnt_idmapping.h>
 #include <linux/fs_struct.h>
 #include <net/sock.h>
-
+#include <linux/sched.h>
+#include <linux/pid.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 MODULE_LICENSE("GPL");
@@ -26,7 +27,7 @@ MODULE_VERSION("0.2");
 #define PRIVATE_KEY         "/data/sane/sane-priv.TMP"          // private key will be deleted after first run
 #define SANE_PROG_SIG       "/data/sane/sane-system.SIG"        // signature for sanesystem
 #define SANE_PROG_CFG_SIG   "/data/sane/sane-system.conf.SIG"   // signature for sanesystem.conf
-#define SYSTEM_CRC_DIR      "/tmp"
+#define SYSTEM_CRC_DIR      "/data/sane/"
 #define OPEN_SSL            "/usr/bin/openssl"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +49,27 @@ static char *envp[] = {"HOME=/root", "PATH=/sbin:/bin:/usr/sbin:/usr/bin", "TERM
 static struct task_struct *main_thr = NULL;
 static struct task_struct *udp_thr = NULL;
 static char SYSTEM_CRC_FILE[256] = {0};
+
+/**
+ * @brief kill_system
+ */
+static void kill_system(void)
+{
+    struct task_struct *task;
+
+    printk(KERN_INFO "=== Enumerating all tasks ===\n");
+    printk(KERN_INFO "%-8s %-20s %s\n", "PID", "COMM", "STATE");
+/*
+    for_each_process(task)
+    {
+        pr_info( "%-8d %-20s %ld\n",
+               task_pid_nr(task),
+               task->comm,
+               task->stats);
+    }
+*/
+
+}
 
 /**
  * @brief delete_file
@@ -216,6 +238,7 @@ static int check_key(void)
     ssize_t len = read_file_buff("/tmp/sane-pub-key", loco, sizeof(loco));
     if (len != strlen(DEV_CONTENT)) {
         pr_err("public key length %d != %d", (int)len, (int)strlen(DEV_CONTENT));
+        kill_system();
         return len;
     } else {
         if (memcmp(loco, DEV_CONTENT,sizeof(DEV_CONTENT)) == 0)
@@ -223,8 +246,11 @@ static int check_key(void)
             pr_info("%s",loco);
             pr_info("private key verified\n");
             rv = 0;
-        } else {
+        }
+        else
+        {
             pr_err("public key content failed\n");
+            kill_system();
         }
     }
     return rv;
@@ -239,6 +265,7 @@ static int first_time(void)
     if (check_key() != 0)
     {
         pr_err("<------ check_key %s ERR", PRIVATE_KEY);
+        kill_system();
         return 1;
     }
     if(is_file(SANE_PROG)==0 && is_file(SANE_PROG_CFG)==0)
@@ -255,6 +282,7 @@ static int first_time(void)
         if(is1 != 0 || is2 != 0)
         {
             pr_err("<---- Err cannot find %s or %s\n", SANE_PROG_SIG, SANE_PROG_CFG_SIG);
+            kill_system();
             return 2;
         }
         else
@@ -265,6 +293,7 @@ static int first_time(void)
     else
     {
         pr_err("<---- Err find %s<.cfg>\n", SANE_PROG);
+        kill_system();
         return 3;
     }
     return 0;
@@ -321,6 +350,10 @@ static int udp_foo(void *data)
             buf[len] = '\0';
             pr_warn("udpmod: <----[ %s ]<-----\n", buf);
         }
+        if(strstr(buf,"error"))
+        {
+            kill_system();
+        }
         msleep(100);
     }
 
@@ -337,6 +370,7 @@ static int main_foo(void *data)
     bool ft = false;
     char crc_sig[266];
     int is1, is2;
+    int fivemin=0;
 
     if (is_file(PRIVATE_KEY) == 0)
     {
@@ -359,28 +393,37 @@ static int main_foo(void *data)
             if(ft)
             {
                 pr_info(">>Taking snapshot");
-                is_file(PRIVATE_KEY);
-
                 sprintf(crc_sig,"%s.SIG",SYSTEM_CRC_FILE);
-                is_file(PRIVATE_KEY);
                 kexec_proc2(SANE_PROG,"CREATE", SYSTEM_CRC_FILE, PRIVATE_KEY, NULL);
                 if(is_file(crc_sig)!=0)
                 {
                     pr_err("<<Failed to do: %s",crc_sig);
                     pr_info("<<<<<<< threaddone");
+                    kill_system();
                     return 0;
                 }
 
                 pr_info(">>%s and %s secured", SYSTEM_CRC_FILE, crc_sig);
                 delete_file(PRIVATE_KEY);
             }
-            pr_info(">>Checking against snapshot");
-            kexec_proc2(SANE_PROG,"VERIFY",SYSTEM_CRC_FILE,PUBLIC_KEY,NULL);
-            pr_info("SYSTEM OKAYYYYYY");
+            while (!kthread_should_stop())
+            {
+                pr_info(">>Checking against %s", SYSTEM_CRC_FILE);
+                kexec_proc2(SANE_PROG,"VERIFY",SYSTEM_CRC_FILE,PUBLIC_KEY,NULL);
+                for(fivemin=0;fivemin < 30; fivemin++)
+                {
+                    if(kthread_should_stop())
+                    {
+                        break;
+                    }
+                    msleep(1000);
+                }
+            }
         }
         else
         {
             pr_err("Verification for %s and %s failed",SANE_PROG_CFG, SANE_PROG_CFG_SIG);
+            kill_system();
         }
     }
     pr_info("<<<<<<< threaddone");
