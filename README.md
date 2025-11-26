@@ -37,6 +37,7 @@ command=fw_printenv,^mmcpart  # any uboot env except mmcpart has changed
 
 
 
-<img width="986" height="767" alt="image" src="https://github.com/user-attachments/assets/1a89e2d7-e2c8-46c0-a353-c9c25bc42bd7" />
+<img width="981" height="988" alt="image" src="https://github.com/user-attachments/assets/4680efa1-3673-4c84-ba05-6c542241eee7" />
+
 
 
