@@ -8,6 +8,10 @@ add_executable(sanesystem
     bin/sanesystem.conf
     sane-dev/sane-dev.c
     ini_file.h
+    crc32sum_t.h
+    paralel_crc_t.h paralel_crc_t.cpp
+    map_file_mem_t.h
+    sane_utils_t.h sane_utils_t.cpp
 )
 
 add_definitions(-DCPLUSPLUS)
