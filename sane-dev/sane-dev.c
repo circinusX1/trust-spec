@@ -55,20 +55,7 @@ static char SYSTEM_CRC_FILE[256] = {0};
  */
 static void kill_system(void)
 {
-    struct task_struct *task;
-
-    printk(KERN_INFO "=== Enumerating all tasks ===\n");
-    printk(KERN_INFO "%-8s %-20s %s\n", "PID", "COMM", "STATE");
-/*
-    for_each_process(task)
-    {
-        pr_info( "%-8d %-20s %ld\n",
-               task_pid_nr(task),
-               task->comm,
-               task->stats);
-    }
-*/
-
+    pr_err("<<<<<<<<<<<<KILLING SYSTEM>>>>>>>>>>>>");
 }
 
 /**

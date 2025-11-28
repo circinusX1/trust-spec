@@ -158,7 +158,7 @@ public:
         }
 
         const Node& node(size_t index=0)const{
-            static Node empty(Node::eNULL,"~error~");
+            static Node empty(Node::eNULL,"");
             if(_values.size() && _values.size()>=index)
                 return *_values[index];
             return empty;
@@ -171,7 +171,7 @@ public:
         }
 
         const std::string value(size_t index=0)const{
-            static std::string empty="~error~";
+            static std::string empty="";
             if(_values.size() )
             {
                 std::string v;

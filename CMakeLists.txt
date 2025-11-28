@@ -12,6 +12,11 @@ add_executable(sanesystem
     paralel_crc_t.h paralel_crc_t.cpp
     map_file_mem_t.h
     sane_utils_t.h sane_utils_t.cpp
+    sane_sys_t.h sane_sys_t.cpp
+    sane_files_t.h sane_files_t.cpp
+    sane_cmd_out_t.h sane_cmd_out_t.cpp
+    sane_procs_t.h sane_procs_t.cpp
+    udp_to_kernel_t.h udp_to_kernel_t.cpp
 )
 
 add_definitions(-DCPLUSPLUS)
